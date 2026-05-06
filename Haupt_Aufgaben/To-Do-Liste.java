@@ -13,6 +13,8 @@ public class ToDoListe {
 	static ArrayList<String> erledigt = new ArrayList<String>();
 	static ArrayList<String> nutzer = new ArrayList<String>();
 	static ArrayList<String> passwoerter = new ArrayList<String>();
+	static String newLine = System.lineSeparator();
+
 
 	static File user = new File("UsersToDoListe.txt");
 	static File datei = new File("ToDoListe.txt");
@@ -20,7 +22,6 @@ public class ToDoListe {
 	public static void main(String args[]) {
 		nutzer.add("admin");
 		passwoerter.add("1234");
-		Scanner eingabe = new Scanner(System.in);
 		int in = 0;
 		getUsers(user);
 		datei = addUserPrefix(datei);
@@ -43,7 +44,7 @@ public class ToDoListe {
 			}
 
 			try {
-				in = eingabe.nextInt();
+				in = getUserInt("");
 			} catch (InputMismatchException e) {
 				System.err.println("Sie können nur Zahlen eingaben!");
 			}
@@ -63,9 +64,7 @@ public class ToDoListe {
 				break;
 			case 3:
 				try {
-					System.out.println(
-							"Möchten sie Alle(1) , Sehr Wichtige(2), Wichtige(3) oder Nicht Wichtige(4) Aufgaben sehen?");
-					in = eingabe.nextInt();
+					in = getUserInt("Möchten sie Alle(1) , Sehr Wichtige(2), Wichtige(3) oder Nicht Wichtige(4) Aufgaben sehen?");
 				} catch (InputMismatchException r) {
 					System.out.println("Bitte geben sie eine Zahl ein!");
 				}
@@ -107,11 +106,9 @@ public class ToDoListe {
 	}
 
 	public static String[] newTask() {
-		Scanner eingabe = new Scanner(System.in);
 		String in = "";
 		while (true) {
-			System.out.println("Was möchten sie hinzufügen?");
-			in = eingabe.nextLine();
+			in = getUserString("Was möchten sie hinzufügen?");
 			if (!in.isEmpty()) {
 				String[] e = getTimeAndLevel();
 				String[] TaskAndTimeAndLevel = { in, e[0], e[1] };
@@ -223,12 +220,10 @@ public class ToDoListe {
 	}
 
 	public static void removeTask() {
-		Scanner eingabe = new Scanner(System.in);
 		int in = 0;
 		while (true) {
 			try {
-				System.out.println("Welche Aufgabe möchen sie Löschen?");
-				in = eingabe.nextInt() - 1;
+				in = getUserInt("Welche Aufgabe möchen sie Löschen?") - 1;
 				erledigt.add(toDo.get(in));
 				toDo.remove(in);
 				ablaufdatum.remove(in);
@@ -245,13 +240,11 @@ public class ToDoListe {
 	}
 
 	public static String[] getTimeAndLevel() {
-		Scanner eingabe = new Scanner(System.in);
 		String time = "";
 		String level = "";
 		boolean weiter = true;
 		while (true) {
-			System.out.println("Bis wann muss die Aufgabe erledigt sein?");
-			time = eingabe.nextLine();
+			time = getUserString("Bis wann muss die Aufgabe erledigt sein?");
 			if (!time.isBlank()) {
 				break;
 			} else {
@@ -259,12 +252,7 @@ public class ToDoListe {
 			}
 		}
 		while (weiter) {
-			System.out.println("Wie wichtig ist die aufgabe?");
-			System.out.println("1 = Sehr wichtig");
-			System.out.println("2 = Wichtig");
-			System.out.println("3 = Nicht wichtig");
-
-			level = eingabe.nextLine();
+			level = getUserString("Wie wichtig ist die aufgabe?" + newLine + "1 = Sehr wichtig" + newLine + "2 = Wichtig" + newLine +"3 = Nicht wichtig");
 			switch (level) {
 			case "1":
 				level = "Sehr Wichtig";
@@ -312,6 +300,7 @@ public class ToDoListe {
 	}
 
 	public static void getUsers(File datei) {
+		String[] cutData = {""};
 		if (datei.exists()) {
 			System.out.println(GRÜN + "User Wurden Gefunden" + WEIß);
 			System.out.println(datei.getAbsolutePath());
@@ -319,8 +308,9 @@ public class ToDoListe {
 				while (scan.hasNextLine()) {
 					String data = scan.nextLine();
 					// data verarbeiten
-					System.out.println(data);
-					nutzer.add(data);
+					cutData = data.split("#");
+					nutzer.add(cutData[0]);
+					passwoerter.add(cutData[1]);
 				}
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -336,12 +326,10 @@ public class ToDoListe {
 
 	public static File addUserPrefix(File file) {
 		String username = "";
-		Scanner in = new Scanner(System.in);
 		while (true) {
-			System.out.print("Benutzer: ");
-			username = in.nextLine();
+			username = getUserString("Benutzer: ");
 			if (nutzer.contains(username)) {
-				login(nutzers.indexOf(username));
+				login(nutzer.indexOf(username));
 				System.out.println("Sie sind Angemeldet");
 				File datei = new File(username + file);
 				return datei;
@@ -353,11 +341,12 @@ public class ToDoListe {
 	}
 
 	public static void addUsers(File datei) {
-		Scanner in = new Scanner(System.in);
 		String newUser = "";
-		System.out.println("Wie soll ihr nutzername sein?");
-		newUser = in.nextLine();
+		newUser = getUserString("Wie soll ihr nutzername sein?");
 		nutzer.add(newUser);
+		newUser = getUserString("Wie soll ihr passwort sein?");
+		passwoerter.add(newUser);
+		
 	}
 
 	public static void saveList(File name) {
@@ -380,7 +369,7 @@ public class ToDoListe {
 		try {
 			FileWriter writer = new FileWriter(user2);
 			writer.write("");
-			for (int i = 0; i < toDo.size(); i++) {
+			for (int i = 1; i < toDo.size(); i++) {
 				System.out.println(nutzer.get(i));
 				writer.append(nutzer.get(i) + "#" +  passwoerter.get(i) + "\n");
 			}
@@ -390,24 +379,40 @@ public class ToDoListe {
 			e.printStackTrace();
 		}
 	}
-	public static void login(int pos) {
+	public static boolean login(int pos) {
 		String pas = "";
 		int count = 3;
-		Scanner in = new Scanner(System.in)
 		while (true) {
 			if (count <= 0) {
 				System.out.print("Sie haben das passwort zu oft falsch eingegeben!");
 				return false;
 			}
-		System.out.print("Passwort: ");
-		pas = in.nextLine();
+		pas = getUserString("Passwort: ");
 		if (pas.equals(passwoerter.get(pos))) {
-		return true
+		return true;
 		} else {
 			count--;
 			System.err.println("Ihr Passwort war Falsch! Sie haben noch " + count + " versuche");
 		}
 	}
 	}
-
+	public static String getUserString(String frage) {
+		Scanner in = new Scanner (System.in);
+		System.out.println(frage);
+		return in.nextLine();
+	}
+	
+	public static int getUserInt(String frage) {
+		Scanner in = new Scanner (System.in);
+		int eingabe = 0;
+		while (true) {
+			try {
+				System.out.println(frage);
+				eingabe = in.nextInt();
+			} catch (InputMismatchException f) {
+				System.err.println("Bitte geben sie eine Zahl ein!");
+			}
+			return eingabe;
+	}
+}
 }
