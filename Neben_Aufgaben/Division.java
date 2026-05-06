@@ -1,3 +1,4 @@
+package division;
 import java.util.Scanner;
 
 public class DivisionsMethode {

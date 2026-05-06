@@ -1,3 +1,4 @@
+package schulnoten;
 import java.util.*;
 
 public class Schulnoten {

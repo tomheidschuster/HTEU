@@ -1,3 +1,4 @@
+package vokalePrüfen;
 import java.util.Scanner;
 
 public class VokalePrüfen {

@@ -1,6 +1,7 @@
+package palindrom;
 import java.util.Scanner;
 
-public class plaaindrom {
+public class palindrom {
 	public static void main(String[] args) {
 		String myStr = "Hallo";
 		boolean palindrom = true;

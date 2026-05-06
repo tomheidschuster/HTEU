@@ -1,3 +1,4 @@
+package ratespiel;
 import java.util.Scanner;
 
 public class Ratespiel {
