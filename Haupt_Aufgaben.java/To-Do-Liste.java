@@ -1,5 +1,3 @@
-package toDoListe;
-
 import java.util.*;
 import java.io.*;
 
@@ -320,9 +318,8 @@ public class ToDoListe {
 				while (scan.hasNextLine()) {
 					String data = scan.nextLine();
 					// data verarbeiten
-					String[] cutData = data.split("#");
-					nutzer.add(cutData[0]);
-					passwoerter.add(cutData[1]);
+					System.out.println(data);
+					nutzer.add(data);
 				}
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
@@ -343,14 +340,11 @@ public class ToDoListe {
 			System.out.print("Benutzer: ");
 			username = in.nextLine();
 			if (nutzer.contains(username)) {
-				if(login(nutzer.indexOf(username))) {
-					
+				login(nutzers.indexOf(username));
 				System.out.println("Sie sind Angemeldet");
 				File datei = new File(username + file);
 				return datei;
-				} else {
-					System.exit(0);
-				}
+
 			} else {
 				System.err.println("Bitte geben sie einen Gültigen nutzer ein!");
 			}
@@ -363,9 +357,6 @@ public class ToDoListe {
 		System.out.println("Wie soll ihr nutzername sein?");
 		newUser = in.nextLine();
 		nutzer.add(newUser);
-		System.out.println("Wie soll ihr passwort sein?");
-		newUser = in.nextLine();
-		passwoerter.add(newUser);
 	}
 
 	public static void saveList(File name) {
@@ -384,11 +375,11 @@ public class ToDoListe {
 		}
 	}
 
-	public static void saveUsers(File user) {
+	public static void saveUsers(File user2) {
 		try {
-			FileWriter writer = new FileWriter(user);
+			FileWriter writer = new FileWriter(user2);
 			writer.write("");
-			for (int i = 1; i < nutzer.size(); i++) {
+			for (int i = 0; i < toDo.size(); i++) {
 				System.out.println(nutzer.get(i));
 				writer.append(nutzer.get(i) + "#" +  passwoerter.get(i) + "\n");
 			}
@@ -398,10 +389,10 @@ public class ToDoListe {
 			e.printStackTrace();
 		}
 	}
-	public static boolean login(int pos) {
+	public static void login(int pos) {
 		String pas = "";
 		int count = 3;
-		Scanner in = new Scanner(System.in);
+		Scanner in = new Scanner(System.in)
 		while (true) {
 			if (count <= 0) {
 				System.out.print("Sie haben das passwort zu oft falsch eingegeben!");
@@ -410,7 +401,7 @@ public class ToDoListe {
 		System.out.print("Passwort: ");
 		pas = in.nextLine();
 		if (pas.equals(passwoerter.get(pos))) {
-		return true;
+		return true
 		} else {
 			count--;
 			System.err.println("Ihr Passwort war Falsch! Sie haben noch " + count + " versuche");
