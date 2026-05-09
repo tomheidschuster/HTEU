@@ -2,8 +2,6 @@ package toDoListe;
 
 import java.util.*;
 import java.io.*;
-import java.time.LocalDateTime; // Import the LocalDateTime class
-import java.time.format.DateTimeFormatter; // Import the DateTimeFormatter class
 
 public class ToDoListe {
 	static final String GRÜN = "\u001B[32m";
@@ -18,6 +16,7 @@ public class ToDoListe {
 	static ArrayList<String> passwoerter = new ArrayList<String>();
 	static String newLine = System.lineSeparator();
 
+
 	static File user = new File("UsersToDoListe.txt");
 	static File datei = new File("ToDoListe.txt");
 
@@ -26,11 +25,17 @@ public class ToDoListe {
 		passwoerter.add("1234");
 		int in = 0;
 		getUsers(user);
+
+		if(nutzer.size() < 2) {
+			nutzer.add(getUserString("Es wurde kein Nutzer gefunden! Bitte geben sie einen Neuen Nutzer ein:"));
+			passwoerter.add(getUserString("Neues Passwort:"));
+		}
 		datei = addUserPrefix(datei);
 		setupFile(datei);
+		System.out.println("Nutzer:");
 
 		while (true) {
-
+			
 			System.out.println("Was möchten sie machen?");
 			System.out.println("(0) Benutzer Hinzufügen");
 			System.out.println("(1) Programm beenden");
@@ -55,6 +60,7 @@ public class ToDoListe {
 				addUsers(user);
 				break;
 			case 1:
+
 				saveUsers(user);
 				saveList(datei);
 				return;
@@ -311,7 +317,6 @@ public class ToDoListe {
 		String[] cutData = { "" };
 		if (datei.exists()) {
 			System.out.println(GRÜN + "User Wurden Gefunden" + WEIß);
-			System.out.println(datei.getAbsolutePath());
 			try (Scanner scan = new Scanner(datei)) {
 				while (scan.hasNextLine()) {
 					String data = scan.nextLine();
@@ -377,15 +382,17 @@ public class ToDoListe {
 	}
 
 	public static void saveUsers(File user2) {
+		System.out.println(GRÜN + "Nutzer werden gespeichert." + WEIß);
 		try {
 			FileWriter writer = new FileWriter(user2);
 			writer.write("");
 			try {
-			for (int i = 1; i < toDo.size(); i++) {
+			for (int i = 1; i < nutzer.size(); i++) {
+
 				writer.append(nutzer.get(i) + "#" + passwoerter.get(i) + "\n");
 			}
 			} catch (IndexOutOfBoundsException e) {
-				
+				System.err.println("Fehler Beim Nutzer Speichern!");
 			}
 			writer.close();
 		} catch (IOException e) {
