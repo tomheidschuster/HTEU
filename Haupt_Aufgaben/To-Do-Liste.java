@@ -16,7 +16,6 @@ public class ToDoListe {
 	static ArrayList<String> passwoerter = new ArrayList<String>();
 	static String newLine = System.lineSeparator();
 
-
 	static File user = new File("UsersToDoListe.txt");
 	static File datei = new File("ToDoListe.txt");
 
@@ -26,16 +25,16 @@ public class ToDoListe {
 		int in = 0;
 		getUsers(user);
 
-		if(nutzer.size() < 2) {
-			nutzer.add(getUserString("Es wurde kein Nutzer gefunden! Bitte geben sie einen Neuen Nutzer ein:"));
-			passwoerter.add(getUserString("Neues Passwort:"));
+		if (nutzer.size() < 2) {
+			System.out.println("Es wurde kein Nutzer gefunden!");
+			createNewUser();
 		}
 		datei = addUserPrefix(datei);
 		setupFile(datei);
 		System.out.println("Nutzer:");
 
 		while (true) {
-			
+
 			System.out.println("Was möchten sie machen?");
 			System.out.println("(0) Benutzer Hinzufügen");
 			System.out.println("(1) Programm beenden");
@@ -255,7 +254,7 @@ public class ToDoListe {
 		while (true) {
 			time = getUserString("Bis wann muss die Aufgabe erledigt sein?");
 			if (!time.isBlank()) {
-				if(checkDate(time)) {
+				if (checkDate(time)) {
 					break;
 				} else {
 					continue;
@@ -340,7 +339,10 @@ public class ToDoListe {
 	public static File addUserPrefix(File file) {
 		String username = "";
 		while (true) {
-			username = getUserString("Benutzer: ");
+			username = getUserString("Benutzer (\"no\" to create a new one): ");
+			if (username.equals("no")) {
+				createNewUser();
+			}
 			if (nutzer.contains(username)) {
 				login(nutzer.indexOf(username));
 				System.out.println("Sie sind Angemeldet");
@@ -368,12 +370,12 @@ public class ToDoListe {
 			FileWriter writer = new FileWriter(name);
 			writer.write("");
 			try {
-			for (int i = 0; i < toDo.size(); i++) {
-				writer.append(toDo.get(i) + "#" + wichtigkeit.get(i) + "#" + ablaufdatum.get(i) + "\n");
+				for (int i = 0; i < toDo.size(); i++) {
+					writer.append(toDo.get(i) + "#" + wichtigkeit.get(i) + "#" + ablaufdatum.get(i) + "\n");
+				}
+			} catch (IndexOutOfBoundsException e) {
+
 			}
-		} catch (IndexOutOfBoundsException e) {
-			
-		}
 			writer.close();
 		} catch (IOException e) {
 			System.out.println("Datei nicht beschrieben");
@@ -387,10 +389,10 @@ public class ToDoListe {
 			FileWriter writer = new FileWriter(user2);
 			writer.write("");
 			try {
-			for (int i = 1; i < nutzer.size(); i++) {
+				for (int i = 1; i < nutzer.size(); i++) {
 
-				writer.append(nutzer.get(i) + "#" + passwoerter.get(i) + "\n");
-			}
+					writer.append(nutzer.get(i) + "#" + passwoerter.get(i) + "\n");
+				}
 			} catch (IndexOutOfBoundsException e) {
 				System.err.println("Fehler Beim Nutzer Speichern!");
 			}
@@ -441,7 +443,7 @@ public class ToDoListe {
 
 	public static boolean checkDate(String datum) {
 		// Daum sollte in TT.MM.JJJJ Format sein.
-		
+
 		String[] cut = datum.split("[.]");
 		if (cut.length != 3) {
 			System.err.println("Bitte geben sie Ihr Datum in einem TT.MM.JJJJ Format ein!");
@@ -453,7 +455,7 @@ public class ToDoListe {
 		int tag = Integer.parseInt(cut[0]);
 		int monat = Integer.parseInt(cut[1]);
 		int jahr = Integer.parseInt(cut[2]);
-		
+
 		if (tag < 10) {
 			tag = Integer.parseInt("0" + tag);
 		}
@@ -545,5 +547,10 @@ public class ToDoListe {
 		}
 		return true;
 
+	}
+
+	public static void createNewUser() {
+		nutzer.add(getUserString("Bitte geben sie einen Neuen Nutzer ein:"));
+		passwoerter.add(getUserString("Neues Passwort:"));
 	}
 }
