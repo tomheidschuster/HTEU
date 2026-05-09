@@ -1,6 +1,9 @@
 package toDoListe;
+
 import java.util.*;
 import java.io.*;
+import java.time.LocalDateTime; // Import the LocalDateTime class
+import java.time.format.DateTimeFormatter; // Import the DateTimeFormatter class
 
 public class ToDoListe {
 	static final String GRÜN = "\u001B[32m";
@@ -14,7 +17,6 @@ public class ToDoListe {
 	static ArrayList<String> nutzer = new ArrayList<String>();
 	static ArrayList<String> passwoerter = new ArrayList<String>();
 	static String newLine = System.lineSeparator();
-
 
 	static File user = new File("UsersToDoListe.txt");
 	static File datei = new File("ToDoListe.txt");
@@ -64,7 +66,8 @@ public class ToDoListe {
 				break;
 			case 3:
 				try {
-					in = getUserInt("Möchten sie Alle(1) , Sehr Wichtige(2), Wichtige(3) oder Nicht Wichtige(4) Aufgaben sehen?");
+					in = getUserInt(
+							"Möchten sie Alle(1) , Sehr Wichtige(2), Wichtige(3) oder Nicht Wichtige(4) Aufgaben sehen?");
 				} catch (InputMismatchException r) {
 					System.out.println("Bitte geben sie eine Zahl ein!");
 				}
@@ -246,13 +249,18 @@ public class ToDoListe {
 		while (true) {
 			time = getUserString("Bis wann muss die Aufgabe erledigt sein?");
 			if (!time.isBlank()) {
-				break;
+				if(checkDate(time)) {
+					break;
+				} else {
+					continue;
+				}
 			} else {
 				System.err.println("Bitte geben sie etwas ein");
 			}
 		}
 		while (weiter) {
-			level = getUserString("Wie wichtig ist die aufgabe?" + newLine + "1 = Sehr wichtig" + newLine + "2 = Wichtig" + newLine +"3 = Nicht wichtig");
+			level = getUserString("Wie wichtig ist die aufgabe?" + newLine + "1 = Sehr wichtig" + newLine
+					+ "2 = Wichtig" + newLine + "3 = Nicht wichtig");
 			switch (level) {
 			case "1":
 				level = "Sehr Wichtig";
@@ -300,7 +308,7 @@ public class ToDoListe {
 	}
 
 	public static void getUsers(File datei) {
-		String[] cutData = {""};
+		String[] cutData = { "" };
 		if (datei.exists()) {
 			System.out.println(GRÜN + "User Wurden Gefunden" + WEIß);
 			System.out.println(datei.getAbsolutePath());
@@ -346,7 +354,7 @@ public class ToDoListe {
 		nutzer.add(newUser);
 		newUser = getUserString("Wie soll ihr passwort sein?");
 		passwoerter.add(newUser);
-		
+
 	}
 
 	public static void saveList(File name) {
@@ -354,10 +362,13 @@ public class ToDoListe {
 
 			FileWriter writer = new FileWriter(name);
 			writer.write("");
+			try {
 			for (int i = 0; i < toDo.size(); i++) {
-				System.out.println(toDo.get(i) + "#" + wichtigkeit.get(i) + "#" + ablaufdatum.get(i));
 				writer.append(toDo.get(i) + "#" + wichtigkeit.get(i) + "#" + ablaufdatum.get(i) + "\n");
 			}
+		} catch (IndexOutOfBoundsException e) {
+			
+		}
 			writer.close();
 		} catch (IOException e) {
 			System.out.println("Datei nicht beschrieben");
@@ -369,9 +380,12 @@ public class ToDoListe {
 		try {
 			FileWriter writer = new FileWriter(user2);
 			writer.write("");
+			try {
 			for (int i = 1; i < toDo.size(); i++) {
-				System.out.println(nutzer.get(i));
-				writer.append(nutzer.get(i) + "#" +  passwoerter.get(i) + "\n");
+				writer.append(nutzer.get(i) + "#" + passwoerter.get(i) + "\n");
+			}
+			} catch (IndexOutOfBoundsException e) {
+				
 			}
 			writer.close();
 		} catch (IOException e) {
@@ -379,6 +393,7 @@ public class ToDoListe {
 			e.printStackTrace();
 		}
 	}
+
 	public static boolean login(int pos) {
 		String pas = "";
 		int count = 3;
@@ -387,23 +402,24 @@ public class ToDoListe {
 				System.out.print("Sie haben das passwort zu oft falsch eingegeben!");
 				return false;
 			}
-		pas = getUserString("Passwort: ");
-		if (pas.equals(passwoerter.get(pos))) {
-		return true;
-		} else {
-			count--;
-			System.err.println("Ihr Passwort war Falsch! Sie haben noch " + count + " versuche");
+			pas = getUserString("Passwort: ");
+			if (pas.equals(passwoerter.get(pos))) {
+				return true;
+			} else {
+				count--;
+				System.err.println("Ihr Passwort war Falsch! Sie haben noch " + count + " versuche");
+			}
 		}
 	}
-	}
+
 	public static String getUserString(String frage) {
-		Scanner in = new Scanner (System.in);
+		Scanner in = new Scanner(System.in);
 		System.out.println(frage);
 		return in.nextLine();
 	}
-	
+
 	public static int getUserInt(String frage) {
-		Scanner in = new Scanner (System.in);
+		Scanner in = new Scanner(System.in);
 		int eingabe = 0;
 		while (true) {
 			try {
@@ -413,6 +429,114 @@ public class ToDoListe {
 				System.err.println("Bitte geben sie eine Zahl ein!");
 			}
 			return eingabe;
+		}
 	}
-}
+
+	public static boolean checkDate(String datum) {
+		// Daum sollte in TT.MM.JJJJ Format sein.
+		
+		String[] cut = datum.split("[.]");
+		if (cut.length != 3) {
+			System.err.println("Bitte geben sie Ihr Datum in einem TT.MM.JJJJ Format ein!");
+			System.err.println(cut.length);
+			System.err.println(datum);
+
+			return false;
+		}
+		int tag = Integer.parseInt(cut[0]);
+		int monat = Integer.parseInt(cut[1]);
+		int jahr = Integer.parseInt(cut[2]);
+		
+		if (tag < 10) {
+			tag = Integer.parseInt("0" + tag);
+		}
+		if (monat < 10) {
+			monat = Integer.parseInt("0" + monat);
+		}
+		switch (monat) {
+		case 1:
+			if (tag > 31) {
+				System.err.println("Der Januar hat nur 31 Tage!");
+				return false;
+			}
+			break;
+		case 2:
+			if (jahr % 4 == 0) {
+				if (tag > 29) {
+					System.err.println("Der Februar hat in Schaltjahren nur 29 Tage!");
+					return false;
+				}
+			} else if (tag > 28) {
+				System.err.println("Der Februar hat nur 28 Tage!");
+				return false;
+			}
+			break;
+		case 3:
+			if (tag > 31) {
+				System.err.println("Der März hat nur 31 Tage!");
+				return false;
+			}
+			break;
+		case 4:
+			if (tag > 30) {
+				System.err.println("Der April hat nur 30 Tage!");
+				return false;
+			}
+			break;
+		case 5:
+			if (tag > 31) {
+				System.err.println("Der Mai hat nur 31 Tage!");
+				return false;
+			}
+			break;
+		case 6:
+			if (tag > 30) {
+				System.err.println("Der Juni hat nur 30 Tage!");
+				return false;
+			}
+			break;
+		case 7:
+			if (tag > 31) {
+				System.err.println("Der Juli hat nur 31 Tage!");
+				return false;
+			}
+			break;
+		case 8:
+			if (tag > 31) {
+				System.err.println("Der August hat nur 31 Tage!");
+				return false;
+			}
+			break;
+		case 9:
+			if (tag > 30) {
+				System.err.println("Der September hat nur 30 Tage!");
+				return false;
+			}
+			break;
+		case 10:
+			if (tag > 31) {
+				System.err.println("Der Oktober hat nur 31 Tage!");
+				return false;
+			}
+			break;
+		case 11:
+			if (tag > 30) {
+				System.err.println("Der November hat nur 30 Tage!");
+				return false;
+			}
+			break;
+		case 12:
+			if (tag > 31) {
+				System.err.println("Der Dezember hat nur 31 Tage!");
+				return false;
+			}
+			break;
+		default:
+			System.err.println("Es gibt nur 12 Monate!");
+			return false;
+
+		}
+		return true;
+
+	}
 }
