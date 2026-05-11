@@ -23,7 +23,7 @@ public class ToDoListe {
 		nutzer.add("admin");
 		passwoerter.add("1234");
 		int in = 0;
-		getUsers(user);
+		createNewUser();
 
 		if (nutzer.size() < 2) {
 			System.out.println("Es wurde kein Nutzer gefunden!");
@@ -353,15 +353,6 @@ public class ToDoListe {
 				System.err.println("Bitte geben sie einen Gültigen nutzer ein!");
 			}
 		}
-	}
-
-	public static void addUsers(File datei) {
-		String newUser = "";
-		newUser = getUserString("Wie soll ihr nutzername sein?");
-		nutzer.add(newUser);
-		newUser = getUserString("Wie soll ihr passwort sein?");
-		passwoerter.add(newUser);
-
 	}
 
 	public static void saveList(File name) {
