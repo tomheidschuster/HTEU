@@ -56,7 +56,7 @@ public class ToDoListe {
 			}
 			switch (in) {
 			case 0:
-				addUsers(user);
+				createNewUser();
 				break;
 			case 1:
 
