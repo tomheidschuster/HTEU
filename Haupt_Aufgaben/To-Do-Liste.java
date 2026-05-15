@@ -11,20 +11,22 @@ public class ToDoListe {
 	static ArrayList<String> toDo = new ArrayList<String>();
 	static ArrayList<String> wichtigkeit = new ArrayList<String>();
 	static ArrayList<String> ablaufdatum = new ArrayList<String>();
-	static ArrayList<String> erledigt = new ArrayList<String>();
+	static ArrayList<Boolean> erledigt = new ArrayList<Boolean>();
 	static ArrayList<String> nutzer = new ArrayList<String>();
 	static ArrayList<String> passwoerter = new ArrayList<String>();
+	static ArrayList<Boolean> sortet = new ArrayList<Boolean>();
+
 	static String newLine = System.lineSeparator();
 
 	static File user = new File("UsersToDoListe.txt");
 	static File datei = new File("ToDoListe.txt");
 
 	public static void main(String args[]) {
+
 		nutzer.add("admin");
 		passwoerter.add("1234");
 		int in = 0;
-		createNewUser();
-
+		getUsers(user);
 		if (nutzer.size() < 2) {
 			System.out.println("Es wurde kein Nutzer gefunden!");
 			createNewUser();
@@ -41,12 +43,9 @@ public class ToDoListe {
 			System.out.println("(2) Aufgabe Hinzufügen");
 			if (toDo.size() > 0) {
 				System.out.println("(3) Aufgaben Anzeigen");
-			}
-			if (erledigt.size() > 0) {
-				System.out.println("(4) Erledigte Aufgaben Anzeigen");
-			}
-			if (toDo.size() > 0) {
-				System.out.println("(5) Aufgabe entfernen");
+				System.out.println("(4) Sortiert Anzeigen");
+				System.out.println("(5) Suchen");
+				System.out.println("(6) Aufgabe entfernen");
 			}
 
 			try {
@@ -66,13 +65,14 @@ public class ToDoListe {
 			case 2:
 				String[] e = newTask();
 				toDo.add(e[0]);
+				erledigt.add(false);
 				ablaufdatum.add(e[1]);
 				wichtigkeit.add(e[2]);
 				break;
 			case 3:
 				try {
 					in = getUserInt(
-							"Möchten sie Alle(1) , Sehr Wichtige(2), Wichtige(3) oder Nicht Wichtige(4) Aufgaben sehen?");
+							"Möchten sie Alle(1) , Sehr Wichtige(2), Wichtige(3), Nicht Wichtige(4), Offene(5) oder Erledigte(6) Aufgaben sehen?");
 				} catch (InputMismatchException r) {
 					System.out.println("Bitte geben sie eine Zahl ein!");
 				}
@@ -88,24 +88,52 @@ public class ToDoListe {
 				case 4:
 					showNichtWichtig();
 					break;
+				case 5:
+					showOpen();
+				case 6:
+					showFinished();
 				default:
 					System.out.println("Bitte geben sie eine Zahl von 1 bis 4 ein");
 				}
 				break;
 
 			case 4:
-				if (erledigt.size() > 0) {
-					showFinished();
-				} else {
-					System.err.println("Bitte verwenden Sie eine der Optionen");
+				while (true) {
+
+					try {
+						System.out.println("Wie Möchent sie die Aufgaben Sortieren?");
+						System.out.println("(1) Nach Priorität");
+						System.out.println("(2) Nach Ablaufdatum");
+						System.out.println("(3) Alphabetisch");
+						in = getUserInt("(4) Nach Staus");
+					} catch (InputMismatchException z) {
+						System.err.println("Bitte geben sie nur Zahlen ein!");
+					}
+					if (in <= 4 && in > 0) {
+						break;
+					}
+				}
+				switch (in) {
+				case 1:
+					showSortet("prio");
+					break;
+				case 2:
+					showSortet("ablaufd");
+					break;
+				case 3:
+					showSortet("abc");
+					break;
+				case 4:
+					showSortet("status");
+					break;
 				}
 				break;
 			case 5:
-				if (toDo.size() > 0) {
-					removeTask();
-				} else {
-					System.err.println("Bitte verwenden Sie eine der Optionen");
-				}
+				serch();
+				break;
+
+			case 6:
+				removeTask();
 				break;
 			default:
 				System.err.println("Bitte verwenden Sie eine der Optionen");
@@ -220,9 +248,110 @@ public class ToDoListe {
 		}
 		for (int i = 0; i < erledigt.size(); i++) {
 			if (i < 10) {
-				System.out.println("0" + (i + 1) + " " + erledigt.get(i));
+				if (erledigt.get(i)) {
+					System.out.println("0" + (i + 1) + " " + toDo.get(i));
+				}
 			} else {
-				System.out.println((i + 1) + " " + erledigt.get(i));
+				if (erledigt.get(i)) {
+					System.out.println((i + 1) + " " + erledigt.get(i));
+				}
+			}
+		}
+	}
+
+	public static void showOpen() {
+		if (erledigt.size() == 0) {
+			System.out.println("Sie haben keine fertigen Aufgaben!");
+			return;
+		}
+		for (int i = 0; i < erledigt.size(); i++) {
+			if (i < 10) {
+				if (!erledigt.get(i)) {
+					System.out.println("0" + (i + 1) + " " + toDo.get(i));
+				}
+			} else {
+				if (!erledigt.get(i)) {
+					System.out.println((i + 1) + " " + erledigt.get(i));
+				}
+			}
+		}
+	}
+
+	public static void showSortet(String i) {
+		for (int w = 0; w < toDo.size(); w++) {
+			sortet.add(false);
+		}
+		boolean printet = false;
+		boolean printedall = false;
+		if (i.equals("prio")) {
+			showSehrWichtig();
+			showWichtig();
+			showNichtWichtig();
+			// Timon war hier
+		} else if (i.equals("ablaufd")) {
+
+			int newDate = 0;
+			String[] cutDate = { "", "", "" };
+			int highestDate = 0;
+			int toPrint = 0;
+			int counter = 0;
+			boolean allSorted = false;
+			// String bei '.' schneiden und umdrehen, danach nach größe sortieren
+			while (!allSorted) {
+				for (int w = 0; w < toDo.size(); w++) {
+					cutDate = ablaufdatum.get(w).split("[.]");
+					newDate = Integer.parseInt(cutDate[2] + cutDate[1] + cutDate[0]);
+					if (newDate > highestDate) {
+						highestDate = newDate;
+						toPrint = w;
+					}
+
+				}
+
+				System.out.println(toDo.get(toPrint));
+				counter++;
+				highestDate = 0;
+				if (counter >= toDo.size()) {
+					allSorted = true;
+				}
+			}
+		} else if (i.equals("abc")) {
+			int champ = 0;
+			int c = 0;
+			int amountPrint = 0;
+			boolean[] printe = new boolean[toDo.size()];
+			printedall = false;
+			String toPrint = "";
+			char[] kleinbuchstabenArray = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
+					'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ' };
+			char[] großbuchstabenArray = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+					'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ' };
+
+			while (c < toDo.size()) {
+				for (int w = 0; w < toDo.size(); w++) {
+					char[] test = toDo.get(w).toCharArray();
+					for (int e = 0; e < kleinbuchstabenArray.length; e++) {
+						if (test[0] == kleinbuchstabenArray[e]
+								|| test[0] == großbuchstabenArray[e] && e < champ && !printe[w]) {
+							champ = e;
+							toPrint = toDo.get(w);
+							printe[w] = true;
+						}
+					}
+				}
+				System.out.println(toPrint);
+				c++;
+			}
+		} else if (i.equals("status")) {
+			for (int w = 0; w < toDo.size(); w++) {
+				if (!erledigt.get(w)) {
+					System.out.println(toDo.get(w));
+				}
+			}
+			for (int w = 0; w < toDo.size(); w++) {
+				if (erledigt.get(w)) {
+					System.out.println(toDo.get(w));
+				}
 			}
 		}
 	}
@@ -232,7 +361,8 @@ public class ToDoListe {
 		while (true) {
 			try {
 				in = getUserInt("Welche Aufgabe möchen sie Löschen?") - 1;
-				erledigt.add(toDo.get(in));
+				erledigt.remove(in);
+				erledigt.add(in, true);
 				toDo.remove(in);
 				ablaufdatum.remove(in);
 				wichtigkeit.remove(in);
@@ -438,8 +568,6 @@ public class ToDoListe {
 		String[] cut = datum.split("[.]");
 		if (cut.length != 3) {
 			System.err.println("Bitte geben sie Ihr Datum in einem TT.MM.JJJJ Format ein!");
-			System.err.println(cut.length);
-			System.err.println(datum);
 
 			return false;
 		}
@@ -452,6 +580,9 @@ public class ToDoListe {
 		}
 		if (monat < 10) {
 			monat = Integer.parseInt("0" + monat);
+		}
+		if (jahr < 2000) {
+			System.err.println("Bitte geben sie ein jahr nach 2000 ein");
 		}
 		switch (monat) {
 		case 1:
@@ -543,5 +674,83 @@ public class ToDoListe {
 	public static void createNewUser() {
 		nutzer.add(getUserString("Bitte geben sie einen Neuen Nutzer ein:"));
 		passwoerter.add(getUserString("Neues Passwort:"));
+	}
+
+	public static void editTask() {
+		int num = 0;
+		int e = 0;
+		String neu = "";
+		String wich = "wichtig";
+		while (true) {
+			try {
+				num = getUserInt("Welche Aufgabe möchten sie bearbeiten?");
+				if (num < toDo.size() && num > 0) {
+					break;
+				}
+			} catch (InputMismatchException t) {
+				System.err.println("Bitte geben sie nur Gültige zahlen ein!");
+			}
+		}
+		while (true) {
+			try {
+				System.out.println("Was möchten sie ändern?");
+				System.out.println("(1) Titel");
+				System.out.println("(2) Priorität");
+				System.out.println("(3) Fälligkeitsdatum");
+				e = getUserInt("(4) Status");
+			} catch (InputMismatchException r) {
+				System.err.println("Bitte geben sie nur Gültige zahlen ein!");
+			}
+			if (e <= 4 && e > 0) {
+				break;
+			}
+		}
+		switch (e) {
+		case 1:
+			toDo.remove(num);
+			toDo.add(num, getUserString("Zu was möchten sie den Titel ändern?"));
+			break;
+		case 2:
+			wichtigkeit.remove(num);
+			System.out.println("Wie wichtig ist die Aufgabe?");
+			System.out.println("(1) Sehr Wichtig");
+			System.out.println("(2) Wichtig");
+			e = getUserInt("(3) Nicht Wichtig");
+			switch (e) {
+			case 1:
+				wichtigkeit.add(num, "Sehr Wichtig");
+				break;
+			case 2:
+				wichtigkeit.add(num, "Wichtig");
+				break;
+			case 3:
+				wichtigkeit.add(num, "Sehr Wichtig");
+				break;
+			}
+			break;
+		case 3:
+			ablaufdatum.remove(num);
+			if (checkDate(getUserString("Zu welchem datum soll es geändet werden?"))) {
+				ablaufdatum.add(num, neu);
+			}
+		case 4:
+			if (erledigt.get(num)) {
+				erledigt.remove(num);
+				erledigt.add(num, false);
+			} else {
+				erledigt.remove(num);
+				erledigt.add(num, true);
+			}
+		}
+	}
+
+	public static void serch() {
+		String in = "";
+		in = getUserString("Wonach möchten sie suchen?");
+		for (int i = 0; i < toDo.size(); i++) {
+			if (toDo.get(i).contains(in)) {
+				System.out.println(toDo.get(i));
+			}
+		}
 	}
 }
