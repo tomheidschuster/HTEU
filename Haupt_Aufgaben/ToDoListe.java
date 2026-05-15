@@ -1,4 +1,4 @@
-package toDoListe;
+package Haupt_Aufgaben;
 
 import java.util.*;
 import java.io.*;
@@ -289,32 +289,7 @@ public class ToDoListe {
 			showNichtWichtig();
 			// Timon war hier
 		} else if (i.equals("ablaufd")) {
-
-			int newDate = 0;
-			String[] cutDate = { "", "", "" };
-			int highestDate = 0;
-			int toPrint = 0;
-			int counter = 0;
-			boolean allSorted = false;
-			// String bei '.' schneiden und umdrehen, danach nach größe sortieren
-			while (!allSorted) {
-				for (int w = 0; w < toDo.size(); w++) {
-					cutDate = ablaufdatum.get(w).split("[.]");
-					newDate = Integer.parseInt(cutDate[2] + cutDate[1] + cutDate[0]);
-					if (newDate > highestDate) {
-						highestDate = newDate;
-						toPrint = w;
-					}
-
-				}
-
-				System.out.println(toDo.get(toPrint));
-				counter++;
-				highestDate = 0;
-				if (counter >= toDo.size()) {
-					allSorted = true;
-				}
-			}
+			sortByDates();
 		} else if (i.equals("abc")) {
 			int champ = 0;
 			int c = 0;
@@ -753,4 +728,41 @@ public class ToDoListe {
 			}
 		}
 	}
+	public static void sortByDates() {
+        ArrayList<Integer> daten = formatDates();
+        boolean[] printed = new boolean[daten.size()];
+        int toPrint = 0;
+        int biggest = 0;
+        boolean allPrinted = false;
+        while(!allPrinted) {
+        for (int i = 0; i < daten.size(); i++) {
+            if (daten.get(i) > biggest && !printed[i]) {
+                biggest = daten.get(i);
+                toPrint = i;
+    }
+}
+    System.out.println(toDo.get(toPrint));
+    daten.remove(toPrint);
+    printed[toPrint] = true;
+    biggest = 0;
+    allPrinted = true;
+    for (boolean i : printed) {
+        if (!i) {
+            allPrinted = false;
+            break;
+        }
+}
+}
+    }
+
+    public static ArrayList<Integer> formatDates() {
+    ArrayList<Integer> daten = new ArrayList<Integer>();
+    for (int i = 0; i < ablaufdatum.size(); i++) {
+        String[] cutDate = ablaufdatum.get(i).split("\\."); 
+        String fixedDate = cutDate[2] + cutDate[1] + cutDate[0];
+        daten.add(Integer.parseInt(fixedDate));
+        //pos in fixedDates =0 pos in ablaufdatum
+    }
+    return daten;
+}
 }
