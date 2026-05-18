@@ -8,13 +8,6 @@ public class ToDoListe {
 	static final String ROT = "\u001B[31m";
 	static final String WEIß = "\u001B[37m";
 	static final String GELB = "\033[33m";
-	static ArrayList<String> toDo = new ArrayList<String>();
-	static ArrayList<String> wichtigkeit = new ArrayList<String>();
-	static ArrayList<String> ablaufdatum = new ArrayList<String>();
-	static ArrayList<Boolean> erledigt = new ArrayList<Boolean>();
-	static ArrayList<String> nutzer = new ArrayList<String>();
-	static ArrayList<String> passwoerter = new ArrayList<String>();
-	static ArrayList<Boolean> sortet = new ArrayList<Boolean>();
 
 	static String newLine = System.lineSeparator();
 
@@ -23,16 +16,23 @@ public class ToDoListe {
 
 	public static void main(String args[]) {
 
+		ArrayList<String> toDo = new ArrayList<String>();
+		ArrayList<String> wichtigkeit = new ArrayList<String>();
+		ArrayList<String> ablaufdatum = new ArrayList<String>();
+		ArrayList<Boolean> erledigt = new ArrayList<Boolean>();
+		ArrayList<String> nutzer = new ArrayList<String>();
+		ArrayList<String> passwoerter = new ArrayList<String>();
+
 		nutzer.add("admin");
 		passwoerter.add("1234");
 		int in = 0;
-		getUsers(user);
+		getUsers(user, nutzer, passwoerter);
 		if (nutzer.size() < 2) {
 			System.out.println("Es wurde kein Nutzer gefunden!");
-			createNewUser();
+			createNewUser(nutzer, passwoerter);
 		}
-		datei = addUserPrefix(datei);
-		setupFile(datei);
+		datei = addUserPrefix(datei, nutzer, passwoerter);
+		setupFile(datei, toDo, wichtigkeit, ablaufdatum);
 		System.out.println("Nutzer:");
 
 		while (true) {
@@ -55,12 +55,12 @@ public class ToDoListe {
 			}
 			switch (in) {
 			case 0:
-				createNewUser();
+				createNewUser(nutzer, passwoerter);
 				break;
 			case 1:
 
-				saveUsers(user);
-				saveList(datei);
+				saveUsers(user, nutzer, passwoerter);
+				saveList(datei, toDo, wichtigkeit, ablaufdatum);
 				return;
 			case 2:
 				String[] e = newTask();
@@ -78,20 +78,20 @@ public class ToDoListe {
 				}
 				switch (in) {
 				case 1:
-					showList();
+					showList(toDo, wichtigkeit, ablaufdatum);
 					break;
 				case 2:
-					showSehrWichtig();
+					showSehrWichtig(toDo, wichtigkeit, ablaufdatum);
 					break;
 				case 3:
-					showWichtig();
+					showWichtig(toDo, wichtigkeit, ablaufdatum);
 				case 4:
-					showNichtWichtig();
+					showNichtWichtig(toDo, wichtigkeit, ablaufdatum);
 					break;
 				case 5:
-					showOpen();
+					showOpen(toDo, erledigt);
 				case 6:
-					showFinished();
+					showFinished(toDo, erledigt);
 				default:
 					System.out.println("Bitte geben sie eine Zahl von 1 bis 4 ein");
 				}
@@ -115,25 +115,25 @@ public class ToDoListe {
 				}
 				switch (in) {
 				case 1:
-					sortByPriority();
+					sortByPriority(toDo, wichtigkeit, ablaufdatum);
 					break;
 				case 2:
-					sortByDates();
+					sortByDates(toDo, ablaufdatum);
 					break;
 				case 3:
-					sortByName();
+					sortByName(toDo);
 					break;
 				case 4:
-					sortByStatus();
+					sortByStatus(toDo, erledigt);
 					break;
 				}
 				break;
 			case 5:
-				serch();
+				search(toDo);
 				break;
 
 			case 6:
-				removeTask();
+				removeTask(toDo, erledigt, ablaufdatum, wichtigkeit);
 				break;
 			default:
 				System.err.println("Bitte verwenden Sie eine der Optionen");
@@ -153,7 +153,7 @@ public class ToDoListe {
 		}
 	}
 
-	public static void showList() {
+	public static void showList(ArrayList<String> toDo, ArrayList<String> wichtigkeit, ArrayList<String> ablaufdatum) {
 		if (toDo.size() == 0) {
 			System.out.println("Sie haben noch keine Aufgaben!");
 			return;
@@ -178,7 +178,8 @@ public class ToDoListe {
 		System.out.print(WEIß);
 	}
 
-	public static void showSehrWichtig() {
+	public static void showSehrWichtig(ArrayList<String> toDo, ArrayList<String> wichtigkeit,
+			ArrayList<String> ablaufdatum) {
 		if (!wichtigkeit.contains("Sehr Wichtig")) {
 			System.out.println("Sie haben keine Sehr Wichtigen Aufgaben!");
 			return;
@@ -199,7 +200,8 @@ public class ToDoListe {
 		System.out.print(WEIß);
 	}
 
-	public static void showWichtig() {
+	public static void showWichtig(ArrayList<String> toDo, ArrayList<String> wichtigkeit,
+			ArrayList<String> ablaufdatum) {
 		if (!wichtigkeit.contains("Wichtig")) {
 			System.out.println("Sie haben keine Wichtigen Aufgaben!");
 			return;
@@ -220,7 +222,8 @@ public class ToDoListe {
 		System.out.print(WEIß);
 	}
 
-	public static void showNichtWichtig() {
+	public static void showNichtWichtig(ArrayList<String> toDo, ArrayList<String> wichtigkeit,
+			ArrayList<String> ablaufdatum) {
 		if (!wichtigkeit.contains("Nicht Wichtig")) {
 			System.out.println("Sie haben keine Nicht Wichtigen Aufgaben!");
 			return;
@@ -241,7 +244,7 @@ public class ToDoListe {
 		System.out.print(WEIß);
 	}
 
-	public static void showFinished() {
+	public static void showFinished(ArrayList<String> toDo, ArrayList<Boolean> erledigt) {
 		if (erledigt.size() == 0) {
 			System.out.println("Sie haben keine fertigen Aufgaben!");
 			return;
@@ -259,7 +262,7 @@ public class ToDoListe {
 		}
 	}
 
-	public static void showOpen() {
+	public static void showOpen(ArrayList<String> toDo, ArrayList<Boolean> erledigt) {
 		if (erledigt.size() == 0) {
 			System.out.println("Sie haben keine fertigen Aufgaben!");
 			return;
@@ -277,16 +280,14 @@ public class ToDoListe {
 		}
 	}
 
-	public static void sortByPriority() {
-		for (int w = 0; w < toDo.size(); w++) {
-			sortet.add(false);
-			showSehrWichtig();
-			showWichtig();
-			showNichtWichtig();
+	public static void sortByPriority(ArrayList<String> toDo,ArrayList<String> wichtigkeit, ArrayList<String> ablaufdatum ) {
+			showSehrWichtig(toDo, wichtigkeit, ablaufdatum);
+			showWichtig(toDo, wichtigkeit, ablaufdatum);
+			showNichtWichtig(toDo, wichtigkeit, ablaufdatum);
 		}
-	}
 
-	public static void removeTask() {
+	public static void removeTask(ArrayList<String> toDo, ArrayList<Boolean> erledigt, ArrayList<String> ablaufdatum,
+			ArrayList<String> wichtigkeit) {
 		int in = 0;
 		while (true) {
 			try {
@@ -347,7 +348,8 @@ public class ToDoListe {
 		return ret;
 	}
 
-	public static void setupFile(File datei) {
+	public static void setupFile(File datei, ArrayList<String> toDo, ArrayList<String> wichtigkeit,
+			ArrayList<String> ablaufdatum) {
 		if (datei.exists()) {
 			System.out.println(GRÜN + "Die To-Do Liste ist bereit" + WEIß);
 			System.out.println(datei.getAbsolutePath());
@@ -372,7 +374,7 @@ public class ToDoListe {
 		}
 	}
 
-	public static void getUsers(File datei) {
+	public static void getUsers(File datei, ArrayList<String> nutzer, ArrayList<String> passwoerter) {
 		String[] cutData = { "" };
 		if (datei.exists()) {
 			System.out.println(GRÜN + "User Wurden Gefunden" + WEIß);
@@ -396,15 +398,15 @@ public class ToDoListe {
 		}
 	}
 
-	public static File addUserPrefix(File file) {
+	public static File addUserPrefix(File file, ArrayList<String> nutzer , ArrayList<String> passwoerter) {
 		String username = "";
 		while (true) {
 			username = getUserString("Benutzer (\"no\" to create a new one): ");
 			if (username.equals("no")) {
-				createNewUser();
+				createNewUser(nutzer, passwoerter);
 			}
 			if (nutzer.contains(username)) {
-				login(nutzer.indexOf(username));
+				login(nutzer.indexOf(username), passwoerter);
 				System.out.println("Sie sind Angemeldet");
 				File datei = new File(username + file);
 				return datei;
@@ -415,7 +417,7 @@ public class ToDoListe {
 		}
 	}
 
-	public static void saveList(File name) {
+	public static void saveList(File name, ArrayList<String> toDo, ArrayList<String> wichtigkeit, ArrayList<String> ablaufdatum) {
 		try {
 
 			FileWriter writer = new FileWriter(name);
@@ -434,7 +436,7 @@ public class ToDoListe {
 		}
 	}
 
-	public static void saveUsers(File user2) {
+	public static void saveUsers(File user2, ArrayList<String> nutzer, ArrayList<String> passwoerter) {
 		System.out.println(GRÜN + "Nutzer werden gespeichert." + WEIß);
 		try {
 			FileWriter writer = new FileWriter(user2);
@@ -454,7 +456,7 @@ public class ToDoListe {
 		}
 	}
 
-	public static boolean login(int pos) {
+	public static boolean login(int pos, ArrayList<String> passwoerter) {
 		String pas = "";
 		int count = 3;
 		while (true) {
@@ -601,12 +603,12 @@ public class ToDoListe {
 
 	}
 
-	public static void createNewUser() {
+	public static void createNewUser(ArrayList<String> nutzer, ArrayList<String> passwoerter) {
 		nutzer.add(getUserString("Bitte geben sie einen Neuen Nutzer ein:"));
 		passwoerter.add(getUserString("Neues Passwort:"));
 	}
 
-	public static void editTask() {
+	public static void editTask(ArrayList<String> toDo, ArrayList<String> wichtigkeit, ArrayList<String> ablaufdatum, ArrayList<Boolean> erledigt) {
 		int num = 0;
 		int e = 0;
 		String neu = "";
@@ -674,7 +676,7 @@ public class ToDoListe {
 		}
 	}
 
-	public static void serch() {
+	public static void search(ArrayList<String> toDo) {
 		String in = "";
 		in = getUserString("Wonach möchten sie suchen?");
 		for (int i = 0; i < toDo.size(); i++) {
@@ -684,8 +686,8 @@ public class ToDoListe {
 		}
 	}
 
-	public static void sortByDates() {
-		ArrayList<Integer> daten = formatDates();
+	public static void sortByDates(ArrayList<String> toDo, ArrayList<String> ablaufdatum) {
+		ArrayList<Integer> daten = formatDates(ablaufdatum);
 		boolean[] printed = new boolean[daten.size()];
 		int toPrint = 0;
 		int biggest = 0;
@@ -711,7 +713,7 @@ public class ToDoListe {
 		}
 	}
 
-	public static void sortByName() {
+	public static void sortByName(ArrayList<String> toDo) {
 		ArrayList<String> liste = toDo;
 		liste.sort(String::compareTo);
 		for (String i : liste) {
@@ -720,7 +722,7 @@ public class ToDoListe {
 
 	}
 
-	public static void sortByStatus() {
+	public static void sortByStatus(ArrayList<String> toDo, ArrayList<Boolean> erledigt) {
 
 		for (int w = 0; w < toDo.size(); w++) {
 			if (!erledigt.get(w)) {
@@ -734,7 +736,7 @@ public class ToDoListe {
 		}
 	}
 
-	public static ArrayList<Integer> formatDates() {
+	public static ArrayList<Integer> formatDates(ArrayList<String> ablaufdatum) {
 		ArrayList<Integer> daten = new ArrayList<Integer>();
 		for (int i = 0; i < ablaufdatum.size(); i++) {
 			String[] cutDate = ablaufdatum.get(i).split("\\.");
