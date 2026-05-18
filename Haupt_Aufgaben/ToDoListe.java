@@ -1,768 +1,102 @@
-package Haupt_Aufgaben;
+package uebung;
 
-import java.util.*;
-import java.io.*;
+import java.util.ArrayList;
 
-public class ToDoListe {
-	static final String GRÜN = "\u001B[32m";
-	static final String ROT = "\u001B[31m";
-	static final String WEIß = "\u001B[37m";
-	static final String GELB = "\033[33m";
-	static ArrayList<String> toDo = new ArrayList<String>();
-	static ArrayList<String> wichtigkeit = new ArrayList<String>();
-	static ArrayList<String> ablaufdatum = new ArrayList<String>();
-	static ArrayList<Boolean> erledigt = new ArrayList<Boolean>();
-	static ArrayList<String> nutzer = new ArrayList<String>();
-	static ArrayList<String> passwoerter = new ArrayList<String>();
-	static ArrayList<Boolean> sortet = new ArrayList<Boolean>();
+public class Uebung {
 
-	static String newLine = System.lineSeparator();
-
-	static File user = new File("UsersToDoListe.txt");
-	static File datei = new File("ToDoListe.txt");
+	static ArrayList<String> printer = new ArrayList<String>();
 
 	public static void main(String args[]) {
+		printer.add("c");
+		printer.add("b");
+		printer.add("a");
+		printer.add("d");
+		printer.add("e");
 
-		nutzer.add("admin");
-		passwoerter.add("1234");
-		int in = 0;
-		getUsers(user);
-		if (nutzer.size() < 2) {
-			System.out.println("Es wurde kein Nutzer gefunden!");
-			createNewUser();
-		}
-		datei = addUserPrefix(datei);
-		setupFile(datei);
-		System.out.println("Nutzer:");
+		sortByName();
+	}
 
-		while (true) {
-
-			System.out.println("Was möchten sie machen?");
-			System.out.println("(0) Benutzer Hinzufügen");
-			System.out.println("(1) Programm beenden");
-			System.out.println("(2) Aufgabe Hinzufügen");
-			if (toDo.size() > 0) {
-				System.out.println("(3) Aufgaben Anzeigen");
-				System.out.println("(4) Sortiert Anzeigen");
-				System.out.println("(5) Suchen");
-				System.out.println("(6) Aufgabe entfernen");
-			}
-
-			try {
-				in = getUserInt("");
-			} catch (InputMismatchException e) {
-				System.err.println("Sie können nur Zahlen eingaben!");
-			}
-			switch (in) {
-			case 0:
-				createNewUser();
-				break;
-			case 1:
-
-				saveUsers(user);
-				saveList(datei);
-				return;
-			case 2:
-				String[] e = newTask();
-				toDo.add(e[0]);
-				erledigt.add(false);
-				ablaufdatum.add(e[1]);
-				wichtigkeit.add(e[2]);
-				break;
-			case 3:
-				try {
-					in = getUserInt(
-							"Möchten sie Alle(1) , Sehr Wichtige(2), Wichtige(3), Nicht Wichtige(4), Offene(5) oder Erledigte(6) Aufgaben sehen?");
-				} catch (InputMismatchException r) {
-					System.out.println("Bitte geben sie eine Zahl ein!");
-				}
-				switch (in) {
-				case 1:
-					showList();
-					break;
-				case 2:
-					showSehrWichtig();
-					break;
-				case 3:
-					showWichtig();
-				case 4:
-					showNichtWichtig();
-					break;
-				case 5:
-					showOpen();
-				case 6:
-					showFinished();
-				default:
-					System.out.println("Bitte geben sie eine Zahl von 1 bis 4 ein");
-				}
-				break;
-
-			case 4:
-				while (true) {
-
-					try {
-						System.out.println("Wie Möchent sie die Aufgaben Sortieren?");
-						System.out.println("(1) Nach Priorität");
-						System.out.println("(2) Nach Ablaufdatum");
-						System.out.println("(3) Alphabetisch");
-						in = getUserInt("(4) Nach Staus");
-					} catch (InputMismatchException z) {
-						System.err.println("Bitte geben sie nur Zahlen ein!");
+	public static void sortByName() {
+		ArrayList<String> namen = printer;
+		int champ = 100;
+		int klein = 0;
+		int groß = 0;
+		int c = namen.size();
+		String toPrint = "";
+		int returnArray[] = new int[2];
+		boolean printing = true;
+		while (printing) {
+			for (String i : namen) {
+				klein = compareToKleinbuchstaben(i);
+				groß = compareToGroßbuchstaben(i);
+				if (klein == -1) {
+					if (groß < champ) {
+						champ = groß;
+						toPrint = i;
 					}
-					if (in <= 4 && in > 0) {
-						break;
+				} else {
+					if (klein < champ) {
+						champ = klein;
+						toPrint = i;
 					}
 				}
-				switch (in) {
-				case 1:
-					showSortet("prio");
-					break;
-				case 2:
-					showSortet("ablaufd");
-					break;
-				case 3:
-					showSortet("abc");
-					break;
-				case 4:
-					showSortet("status");
-					break;
-				}
-				break;
-			case 5:
-				serch();
-				break;
-
-			case 6:
-				removeTask();
-				break;
-			default:
-				System.err.println("Bitte verwenden Sie eine der Optionen");
 			}
 		}
-	}
+		System.out.print(toPrint);
+		namen.remove(champ);
+		champ=100;
 
-	public static String[] newTask() {
-		String in = "";
-		while (true) {
-			in = getUserString("Was möchten sie hinzufügen?");
-			if (!in.isEmpty()) {
-				String[] e = getTimeAndLevel();
-				String[] TaskAndTimeAndLevel = { in, e[0], e[1] };
-				return TaskAndTimeAndLevel;
-			}
-		}
-	}
-
-	public static void showList() {
-		if (toDo.size() == 0) {
-			System.out.println("Sie haben noch keine Aufgaben!");
-			return;
-		}
-		for (int i = 0; i < toDo.size(); i++) {
-			if (i < 10) {
-				if (wichtigkeit.get(i).equals("Sehr Wichtig")) {
-					System.out.print(ROT);
-				} else if (wichtigkeit.get(i).equals("Wichtig")) {
-					System.out.print(GELB);
-				} else if (wichtigkeit.get(i).equals("Nicht Wichtig")) {
-					System.out.print(GRÜN);
-				}
-
-				System.out.println("0" + (i + 1) + " " + toDo.get(i) + ", " + wichtigkeit.get(i) + ", Ablaufdatum: "
-						+ ablaufdatum.get(i));
-			} else {
-				System.out.println((i + 1) + " " + toDo.get(i) + ", " + wichtigkeit.get(i) + ", Ablaufdatum:  "
-						+ ablaufdatum.get(i));
-			}
-		}
-		System.out.print(WEIß);
-	}
-
-	public static void showSehrWichtig() {
-		if (!wichtigkeit.contains("Sehr Wichtig")) {
-			System.out.println("Sie haben keine Sehr Wichtigen Aufgaben!");
-			return;
-		}
-		for (int i = 0; i < toDo.size(); i++) {
-			if (wichtigkeit.get(i).equals("Sehr Wichtig")) {
-				System.out.print(ROT);
-				if (i < 10) {
-
-					System.out.println("0" + (i + 1) + " " + toDo.get(i) + ", " + wichtigkeit.get(i) + ", Ablaufdatum: "
-							+ ablaufdatum.get(i));
-				} else {
-					System.out.println((i + 1) + " " + toDo.get(i) + ", " + wichtigkeit.get(i) + ", Ablaufdatum:  "
-							+ ablaufdatum.get(i));
-				}
-			}
-		}
-		System.out.print(WEIß);
-	}
-
-	public static void showWichtig() {
-		if (!wichtigkeit.contains("Wichtig")) {
-			System.out.println("Sie haben keine Wichtigen Aufgaben!");
-			return;
-		}
-		for (int i = 0; i < toDo.size(); i++) {
-			if (wichtigkeit.get(i).equals("Wichtig")) {
-				System.out.print(GELB);
-				if (i < 10) {
-
-					System.out.println("0" + (i + 1) + " " + toDo.get(i) + ", " + wichtigkeit.get(i) + ", Ablaufdatum: "
-							+ ablaufdatum.get(i));
-				} else {
-					System.out.println((i + 1) + " " + toDo.get(i) + ", " + wichtigkeit.get(i) + ", Ablaufdatum:  "
-							+ ablaufdatum.get(i));
-				}
-			}
-		}
-		System.out.print(WEIß);
-	}
-
-	public static void showNichtWichtig() {
-		if (!wichtigkeit.contains("Nicht Wichtig")) {
-			System.out.println("Sie haben keine Nicht Wichtigen Aufgaben!");
-			return;
-		}
-		for (int i = 0; i < toDo.size(); i++) {
-			if (wichtigkeit.get(i).equals("Nicht Wichtig")) {
-				System.out.print(GRÜN);
-				if (i < 10) {
-
-					System.out.println("0" + (i + 1) + " " + toDo.get(i) + ", " + wichtigkeit.get(i) + ", Ablaufdatum: "
-							+ ablaufdatum.get(i));
-				} else {
-					System.out.println((i + 1) + " " + toDo.get(i) + ", " + wichtigkeit.get(i) + ", Ablaufdatum:  "
-							+ ablaufdatum.get(i));
-				}
-			}
-		}
-		System.out.print(WEIß);
-	}
-
-	public static void showFinished() {
-		if (erledigt.size() == 0) {
-			System.out.println("Sie haben keine fertigen Aufgaben!");
-			return;
-		}
-		for (int i = 0; i < erledigt.size(); i++) {
-			if (i < 10) {
-				if (erledigt.get(i)) {
-					System.out.println("0" + (i + 1) + " " + toDo.get(i));
-				}
-			} else {
-				if (erledigt.get(i)) {
-					System.out.println((i + 1) + " " + erledigt.get(i));
-				}
-			}
-		}
-	}
-
-	public static void showOpen() {
-		if (erledigt.size() == 0) {
-			System.out.println("Sie haben keine fertigen Aufgaben!");
-			return;
-		}
-		for (int i = 0; i < erledigt.size(); i++) {
-			if (i < 10) {
-				if (!erledigt.get(i)) {
-					System.out.println("0" + (i + 1) + " " + toDo.get(i));
-				}
-			} else {
-				if (!erledigt.get(i)) {
-					System.out.println((i + 1) + " " + erledigt.get(i));
-				}
-			}
-		}
-	}
-
-	public static void showSortet(String i) {
-		for (int w = 0; w < toDo.size(); w++) {
-			sortet.add(false);
-		}
-		boolean printet = false;
-		boolean printedall = false;
-		if (i.equals("prio")) {
-			showSehrWichtig();
-			showWichtig();
-			showNichtWichtig();
-			// Timon war hier
-		} else if (i.equals("ablaufd")) {
-			sortByDates();
-		} else if (i.equals("abc")) {
-			int champ = 0;
-			int c = 0;
-			int amountPrint = 0;
-			boolean[] printe = new boolean[toDo.size()];
-			printedall = false;
-			String toPrint = "";
-			char[] kleinbuchstabenArray = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
-					'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ' };
-			char[] großbuchstabenArray = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-					'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ' };
-
-			while (c < toDo.size()) {
-				for (int w = 0; w < toDo.size(); w++) {
-					char[] test = toDo.get(w).toCharArray();
-					for (int e = 0; e < kleinbuchstabenArray.length; e++) {
-						if (test[0] == kleinbuchstabenArray[e]
-								|| test[0] == großbuchstabenArray[e] && e < champ && !printe[w]) {
-							champ = e;
-							toPrint = toDo.get(w);
-							printe[w] = true;
-						}
-					}
-				}
-				System.out.println(toPrint);
-				c++;
-			}
-		} else if (i.equals("status")) {
-			for (int w = 0; w < toDo.size(); w++) {
-				if (!erledigt.get(w)) {
-					System.out.println(toDo.get(w));
-				}
-			}
-			for (int w = 0; w < toDo.size(); w++) {
-				if (erledigt.get(w)) {
-					System.out.println(toDo.get(w));
-				}
-			}
-		}
-	}
-
-	public static void removeTask() {
-		int in = 0;
-		while (true) {
-			try {
-				in = getUserInt("Welche Aufgabe möchen sie Löschen?") - 1;
-				erledigt.remove(in);
-				erledigt.add(in, true);
-				toDo.remove(in);
-				ablaufdatum.remove(in);
-				wichtigkeit.remove(in);
-				return;
-			} catch (InputMismatchException e) {
-				System.err.println("Bitte geben Sie eine Zahl ein!");
-			} catch (IndexOutOfBoundsException r) {
-				System.out.println("Bitte geben sie eine Gültige zahl ein!");
-			}
-
+		c--;
+		if (c == 0) {
+			printing = false;
 		}
 
 	}
 
-	public static String[] getTimeAndLevel() {
-		String time = "";
-		String level = "";
-		boolean weiter = true;
-		while (true) {
-			time = getUserString("Bis wann muss die Aufgabe erledigt sein?");
-			if (!time.isBlank()) {
-				if (checkDate(time)) {
-					break;
-				} else {
-					continue;
-				}
-			} else {
-				System.err.println("Bitte geben sie etwas ein");
+	public static int compareToKleinbuchstaben(String name) {
+		int c = 0;
+		char[] nameArray = name.toCharArray();
+		char[] kleinbuchstabenArray = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+				'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', ' ' };
+
+		for (char i : kleinbuchstabenArray) {
+			c++;
+			if (nameArray[0] == i) {
+				return c;
 			}
 		}
-		while (weiter) {
-			level = getUserString("Wie wichtig ist die aufgabe?" + newLine + "1 = Sehr wichtig" + newLine
-					+ "2 = Wichtig" + newLine + "3 = Nicht wichtig");
-			switch (level) {
-			case "1":
-				level = "Sehr Wichtig";
-				weiter = false;
-				break;
-			case "2":
-				level = "Wichtig";
-				weiter = false;
-				break;
-			case "3":
-				level = "Nicht Wichtig";
-				weiter = false;
-				break;
-			default:
-				System.err.println("Geben sie eine Zahl von 1 bis 3 an!");
-			}
-		}
-		String[] ret = { time, level };
-		return ret;
+		return -1;
 	}
 
-	public static void setupFile(File datei) {
-		if (datei.exists()) {
-			System.out.println(GRÜN + "Die To-Do Liste ist bereit" + WEIß);
-			System.out.println(datei.getAbsolutePath());
-			try (Scanner scan = new Scanner(datei)) {
-				while (scan.hasNextLine()) {
-					String data = scan.nextLine();
-					// data verarbeiten
-					String[] cutData = data.split("#");
-					toDo.add(cutData[0]);
-					wichtigkeit.add(cutData[1]);
-					ablaufdatum.add(cutData[2]);
-				}
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+	public static int compareToGroßbuchstaben(String name) {
+		int c = 0;
+		char[] nameArray = name.toCharArray();
+
+		char[] großbuchstabenArray = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+				'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', ' ' };
+		for (char i : großbuchstabenArray) {
+			c++;
+			if (nameArray[0] == i) {
+
+				return c;
 			}
+
+		}
+		return -1;
+	}
+
+	public static int[] sortN(int e, int champ) {
+		boolean toPrint = false;
+		if (e < champ) {
+			champ = e;
+			toPrint = true;
+		}
+		if (toPrint) {
+			return new int[] { champ, 1 };
 		} else {
-			try {
-				datei.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			return new int[] { champ, 0 };
+
 		}
 	}
 
-	public static void getUsers(File datei) {
-		String[] cutData = { "" };
-		if (datei.exists()) {
-			System.out.println(GRÜN + "User Wurden Gefunden" + WEIß);
-			try (Scanner scan = new Scanner(datei)) {
-				while (scan.hasNextLine()) {
-					String data = scan.nextLine();
-					// data verarbeiten
-					cutData = data.split("#");
-					nutzer.add(cutData[0]);
-					passwoerter.add(cutData[1]);
-				}
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		} else {
-			try {
-				datei.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public static File addUserPrefix(File file) {
-		String username = "";
-		while (true) {
-			username = getUserString("Benutzer (\"no\" to create a new one): ");
-			if (username.equals("no")) {
-				createNewUser();
-			}
-			if (nutzer.contains(username)) {
-				login(nutzer.indexOf(username));
-				System.out.println("Sie sind Angemeldet");
-				File datei = new File(username + file);
-				return datei;
-
-			} else {
-				System.err.println("Bitte geben sie einen Gültigen nutzer ein!");
-			}
-		}
-	}
-
-	public static void saveList(File name) {
-		try {
-
-			FileWriter writer = new FileWriter(name);
-			writer.write("");
-			try {
-				for (int i = 0; i < toDo.size(); i++) {
-					writer.append(toDo.get(i) + "#" + wichtigkeit.get(i) + "#" + ablaufdatum.get(i) + "\n");
-				}
-			} catch (IndexOutOfBoundsException e) {
-
-			}
-			writer.close();
-		} catch (IOException e) {
-			System.out.println("Datei nicht beschrieben");
-			e.printStackTrace();
-		}
-	}
-
-	public static void saveUsers(File user2) {
-		System.out.println(GRÜN + "Nutzer werden gespeichert." + WEIß);
-		try {
-			FileWriter writer = new FileWriter(user2);
-			writer.write("");
-			try {
-				for (int i = 1; i < nutzer.size(); i++) {
-
-					writer.append(nutzer.get(i) + "#" + passwoerter.get(i) + "\n");
-				}
-			} catch (IndexOutOfBoundsException e) {
-				System.err.println("Fehler Beim Nutzer Speichern!");
-			}
-			writer.close();
-		} catch (IOException e) {
-			System.out.println("Datei nicht beschrieben");
-			e.printStackTrace();
-		}
-	}
-
-	public static boolean login(int pos) {
-		String pas = "";
-		int count = 3;
-		while (true) {
-			if (count <= 0) {
-				System.out.print("Sie haben das passwort zu oft falsch eingegeben!");
-				return false;
-			}
-			pas = getUserString("Passwort: ");
-			if (pas.equals(passwoerter.get(pos))) {
-				return true;
-			} else {
-				count--;
-				System.err.println("Ihr Passwort war Falsch! Sie haben noch " + count + " versuche");
-			}
-		}
-	}
-
-	public static String getUserString(String frage) {
-		Scanner in = new Scanner(System.in);
-		System.out.println(frage);
-		return in.nextLine();
-	}
-
-	public static int getUserInt(String frage) {
-		Scanner in = new Scanner(System.in);
-		int eingabe = 0;
-		while (true) {
-			try {
-				System.out.println(frage);
-				eingabe = in.nextInt();
-			} catch (InputMismatchException f) {
-				System.err.println("Bitte geben sie eine Zahl ein!");
-			}
-			return eingabe;
-		}
-	}
-
-	public static boolean checkDate(String datum) {
-		// Daum sollte in TT.MM.JJJJ Format sein.
-
-		String[] cut = datum.split("[.]");
-		if (cut.length != 3) {
-			System.err.println("Bitte geben sie Ihr Datum in einem TT.MM.JJJJ Format ein!");
-
-			return false;
-		}
-		int tag = Integer.parseInt(cut[0]);
-		int monat = Integer.parseInt(cut[1]);
-		int jahr = Integer.parseInt(cut[2]);
-
-		if (tag < 10) {
-			tag = Integer.parseInt("0" + tag);
-		}
-		if (monat < 10) {
-			monat = Integer.parseInt("0" + monat);
-		}
-		if (jahr < 2000) {
-			System.err.println("Bitte geben sie ein jahr nach 2000 ein");
-		}
-		switch (monat) {
-		case 1:
-			if (tag > 31) {
-				System.err.println("Der Januar hat nur 31 Tage!");
-				return false;
-			}
-			break;
-		case 2:
-			if (jahr % 4 == 0) {
-				if (tag > 29) {
-					System.err.println("Der Februar hat in Schaltjahren nur 29 Tage!");
-					return false;
-				}
-			} else if (tag > 28) {
-				System.err.println("Der Februar hat nur 28 Tage!");
-				return false;
-			}
-			break;
-		case 3:
-			if (tag > 31) {
-				System.err.println("Der März hat nur 31 Tage!");
-				return false;
-			}
-			break;
-		case 4:
-			if (tag > 30) {
-				System.err.println("Der April hat nur 30 Tage!");
-				return false;
-			}
-			break;
-		case 5:
-			if (tag > 31) {
-				System.err.println("Der Mai hat nur 31 Tage!");
-				return false;
-			}
-			break;
-		case 6:
-			if (tag > 30) {
-				System.err.println("Der Juni hat nur 30 Tage!");
-				return false;
-			}
-			break;
-		case 7:
-			if (tag > 31) {
-				System.err.println("Der Juli hat nur 31 Tage!");
-				return false;
-			}
-			break;
-		case 8:
-			if (tag > 31) {
-				System.err.println("Der August hat nur 31 Tage!");
-				return false;
-			}
-			break;
-		case 9:
-			if (tag > 30) {
-				System.err.println("Der September hat nur 30 Tage!");
-				return false;
-			}
-			break;
-		case 10:
-			if (tag > 31) {
-				System.err.println("Der Oktober hat nur 31 Tage!");
-				return false;
-			}
-			break;
-		case 11:
-			if (tag > 30) {
-				System.err.println("Der November hat nur 30 Tage!");
-				return false;
-			}
-			break;
-		case 12:
-			if (tag > 31) {
-				System.err.println("Der Dezember hat nur 31 Tage!");
-				return false;
-			}
-			break;
-		default:
-			System.err.println("Es gibt nur 12 Monate!");
-			return false;
-
-		}
-		return true;
-
-	}
-
-	public static void createNewUser() {
-		nutzer.add(getUserString("Bitte geben sie einen Neuen Nutzer ein:"));
-		passwoerter.add(getUserString("Neues Passwort:"));
-	}
-
-	public static void editTask() {
-		int num = 0;
-		int e = 0;
-		String neu = "";
-		String wich = "wichtig";
-		while (true) {
-			try {
-				num = getUserInt("Welche Aufgabe möchten sie bearbeiten?");
-				if (num < toDo.size() && num > 0) {
-					break;
-				}
-			} catch (InputMismatchException t) {
-				System.err.println("Bitte geben sie nur Gültige zahlen ein!");
-			}
-		}
-		while (true) {
-			try {
-				System.out.println("Was möchten sie ändern?");
-				System.out.println("(1) Titel");
-				System.out.println("(2) Priorität");
-				System.out.println("(3) Fälligkeitsdatum");
-				e = getUserInt("(4) Status");
-			} catch (InputMismatchException r) {
-				System.err.println("Bitte geben sie nur Gültige zahlen ein!");
-			}
-			if (e <= 4 && e > 0) {
-				break;
-			}
-		}
-		switch (e) {
-		case 1:
-			toDo.remove(num);
-			toDo.add(num, getUserString("Zu was möchten sie den Titel ändern?"));
-			break;
-		case 2:
-			wichtigkeit.remove(num);
-			System.out.println("Wie wichtig ist die Aufgabe?");
-			System.out.println("(1) Sehr Wichtig");
-			System.out.println("(2) Wichtig");
-			e = getUserInt("(3) Nicht Wichtig");
-			switch (e) {
-			case 1:
-				wichtigkeit.add(num, "Sehr Wichtig");
-				break;
-			case 2:
-				wichtigkeit.add(num, "Wichtig");
-				break;
-			case 3:
-				wichtigkeit.add(num, "Sehr Wichtig");
-				break;
-			}
-			break;
-		case 3:
-			ablaufdatum.remove(num);
-			if (checkDate(getUserString("Zu welchem datum soll es geändet werden?"))) {
-				ablaufdatum.add(num, neu);
-			}
-		case 4:
-			if (erledigt.get(num)) {
-				erledigt.remove(num);
-				erledigt.add(num, false);
-			} else {
-				erledigt.remove(num);
-				erledigt.add(num, true);
-			}
-		}
-	}
-
-	public static void serch() {
-		String in = "";
-		in = getUserString("Wonach möchten sie suchen?");
-		for (int i = 0; i < toDo.size(); i++) {
-			if (toDo.get(i).contains(in)) {
-				System.out.println(toDo.get(i));
-			}
-		}
-	}
-	public static void sortByDates() {
-        ArrayList<Integer> daten = formatDates();
-        boolean[] printed = new boolean[daten.size()];
-        int toPrint = 0;
-        int biggest = 0;
-        boolean allPrinted = false;
-        while(!allPrinted) {
-        for (int i = 0; i < daten.size(); i++) {
-            if (daten.get(i) > biggest && !printed[i]) {
-                biggest = daten.get(i);
-                toPrint = i;
-    }
-}
-    System.out.println(toDo.get(toPrint));
-    daten.remove(toPrint);
-    printed[toPrint] = true;
-    biggest = 0;
-    allPrinted = true;
-    for (boolean i : printed) {
-        if (!i) {
-            allPrinted = false;
-            break;
-        }
-}
-}
-    }
-
-    public static ArrayList<Integer> formatDates() {
-    ArrayList<Integer> daten = new ArrayList<Integer>();
-    for (int i = 0; i < ablaufdatum.size(); i++) {
-        String[] cutDate = ablaufdatum.get(i).split("\\."); 
-        String fixedDate = cutDate[2] + cutDate[1] + cutDate[0];
-        daten.add(Integer.parseInt(fixedDate));
-        //pos in fixedDates =0 pos in ablaufdatum
-    }
-    return daten;
-}
 }
